@@ -1,7 +1,7 @@
 {
-  "name": "fivem-frontend-lib",
+  "name": "os-fivem-fed-modules",
   "version": "1.0.0",
-  "description": "Biblioteca para desenvolvimento front-end para FiveM",
+  "description": "A shared module for Front-End development using ReactJS & TypeScript",
   "main": "src/index.js",
   "type": "module",
   "files": [
@@ -22,19 +22,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marquezenrique/fivem-frontend-lib.git"
+    "url": "git+https://github.com/onesourceteam/os-fivem-fed-modules.git"
   },
   "keywords": [
     "fivem",
     "lib",
-    "frontend"
+    "frontend",
+    "onesource"
   ],
   "author": "Enrique Marquez",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/marquezenrique/fivem-frontend-lib/issues"
+    "url": "https://github.com/onesourceteam/os-fivem-fed-modules/issues"
   },
-  "homepage": "https://github.com/marquezenrique/fivem-frontend-lib#readme",
+  "homepage": "https://github.com/onesourceteam/os-fivem-fed-modules#readme",
   "dependencies": {
     "react": "19.1.1",
     "tsup": "^8.5.0"
