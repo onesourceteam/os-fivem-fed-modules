@@ -1,6 +1,6 @@
 {
   "name": "fivem-frontend-lib",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Biblioteca para desenvolvimento front-end para FiveM",
   "main": "src/index.js",
   "type": "module",
