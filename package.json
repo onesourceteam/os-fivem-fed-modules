@@ -1,6 +1,6 @@
 {
   "name": "os-fivem-fed-modules",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A shared module for Front-End development using ReactJS & TypeScript",
   "main": "dist/index.js",
   "module": "dist/index.js",
