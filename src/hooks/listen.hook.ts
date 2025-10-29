@@ -24,7 +24,7 @@ class Listener<T extends Event = Event> {
   }
 }
 
-export const Listen = <T extends Event = Event>(
+export const useListen = <T extends Event = Event>(
   event: string,
   handler: EventHandlerSignature<T>,
   target: EventTarget = window

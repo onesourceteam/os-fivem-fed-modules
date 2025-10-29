@@ -35,7 +35,7 @@ class NuiListener<T> {
   }
 }
 
-export const Observe = <T = unknown>(
+export const useObserve = <T = unknown>(
   action: string,
   handler: (data: T) => void
 ) => {
