@@ -1,7 +1,7 @@
 import { type RefObject, useEffect, useRef } from "react";
 
-import { isEnvBrowser, noop } from "../utils/misc.js";
-import type { ObservedMessageType } from "../types/observe.hook.types.js";
+import { isEnvBrowser, noop } from "@/utils/index.js";
+import type { ObservedMessageType } from "@/interfaces/observe.hook.types";
 
 type NuiHandlerSignature<T> = (data: T) => void;
 

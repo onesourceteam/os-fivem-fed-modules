@@ -1,5 +1,5 @@
-import type { DebuggerEventType } from "../types/debugger.types.js";
-import { isEnvBrowser } from "./misc.js";
+import type { DebuggerEventType } from "@/interfaces/debugger.types.js";
+import { isEnvBrowser } from "./isEnvBrowser.js";
 
 export class Debugger {
   private events: DebuggerEventType[];

@@ -1,4 +1,4 @@
-import { isEnvBrowser } from "./misc.js";
+import { isEnvBrowser } from "./isEnvBrowser.js";
 
 export class Post<T = unknown> {
   private eventName: string;
