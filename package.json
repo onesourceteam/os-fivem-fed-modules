@@ -4,18 +4,11 @@
   "description": "A shared module for Front-End development using ReactJS & TypeScript",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "type": "module",
   "files": [
     "dist"
   ],
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup",
     "test": "node dist/index.js"
