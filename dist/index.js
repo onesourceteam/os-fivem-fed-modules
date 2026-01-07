@@ -166,7 +166,7 @@ var useListen = (event, handler, target = window) => {
   }, [event, target]);
 };
 
-// src/hooks/imageValidation.hook.ts
+// src/hooks/image-validation.hook.ts
 import { useEffect as useEffect3, useState } from "react";
 function isImgValid(url) {
   const img = new Image();
@@ -223,6 +223,31 @@ var useSound = (src, options = {}) => {
   };
   return { play, pause, isPlaying };
 };
+
+// src/hooks/key-press.hook.ts
+import { useEffect as useEffect5, useRef as useRef4 } from "react";
+var useKeyPress = (key, handler, options = {}) => {
+  const {
+    enabled = true,
+    preventDefault = false,
+    stopPropagation = false
+  } = options;
+  const savedHandler = useRef4(noop);
+  useEffect5(() => {
+    savedHandler.current = handler;
+  }, [handler]);
+  useEffect5(() => {
+    if (!enabled) return;
+    const listener = (event) => {
+      if (event.key.toLowerCase() !== key.toLowerCase()) return;
+      if (preventDefault) event.preventDefault();
+      if (stopPropagation) event.stopPropagation();
+      savedHandler.current(event);
+    };
+    window.addEventListener("keyup", listener);
+    return () => window.removeEventListener("keyup", listener);
+  }, [key, enabled, preventDefault, stopPropagation]);
+};
 export {
   Debugger,
   Post,
@@ -231,6 +256,7 @@ export {
   noop,
   sleep,
   useImageValidation,
+  useKeyPress,
   useListen,
   useObserve,
   useSound

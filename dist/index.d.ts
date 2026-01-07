@@ -31,7 +31,7 @@ declare const noop: () => void;
 declare const useObserve: <T = unknown>(action: string, handler: (data: T) => void) => void;
 
 type EventHandlerSignature<T = Event> = (event: T) => void;
-declare const useListen: <T extends Event = Event>(event: string, handler: EventHandlerSignature<T>, target?: EventTarget) => void;
+declare const useListen: <T extends Event = Event>(event: keyof WindowEventMap, handler: EventHandlerSignature<T>, target?: EventTarget) => void;
 
 declare const useImageValidation: (imageUrl: string) => {
     isImageValid: boolean;
@@ -49,9 +49,17 @@ declare const useSound: (src: string, options?: UseSoundOptionsInterface) => {
     isPlaying: boolean;
 };
 
+type KeyPressHandler = (event: KeyboardEvent) => void;
+interface UseKeyPressOptions {
+    enabled?: boolean;
+    preventDefault?: boolean;
+    stopPropagation?: boolean;
+}
+declare const useKeyPress: (key: string, handler: KeyPressHandler, options?: UseKeyPressOptions) => void;
+
 type ObservedMessageType<T = any> = {
     action: string;
     data: T;
 };
 
-export { Debugger, type DebuggerEventType, type ObservedMessageType, Post, isEnvBrowser, lazyLoad, noop, sleep, useImageValidation, useListen, useObserve, useSound };
+export { Debugger, type DebuggerEventType, type ObservedMessageType, Post, isEnvBrowser, lazyLoad, noop, sleep, useImageValidation, useKeyPress, useListen, useObserve, useSound };

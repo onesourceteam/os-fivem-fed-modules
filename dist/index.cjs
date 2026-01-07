@@ -27,6 +27,7 @@ __export(index_exports, {
   noop: () => noop,
   sleep: () => sleep,
   useImageValidation: () => useImageValidation,
+  useKeyPress: () => useKeyPress,
   useListen: () => useListen,
   useObserve: () => useObserve,
   useSound: () => useSound
@@ -201,7 +202,7 @@ var useListen = (event, handler, target = window) => {
   }, [event, target]);
 };
 
-// src/hooks/imageValidation.hook.ts
+// src/hooks/image-validation.hook.ts
 var import_react4 = require("react");
 function isImgValid(url) {
   const img = new Image();
@@ -258,6 +259,31 @@ var useSound = (src, options = {}) => {
   };
   return { play, pause, isPlaying };
 };
+
+// src/hooks/key-press.hook.ts
+var import_react6 = require("react");
+var useKeyPress = (key, handler, options = {}) => {
+  const {
+    enabled = true,
+    preventDefault = false,
+    stopPropagation = false
+  } = options;
+  const savedHandler = (0, import_react6.useRef)(noop);
+  (0, import_react6.useEffect)(() => {
+    savedHandler.current = handler;
+  }, [handler]);
+  (0, import_react6.useEffect)(() => {
+    if (!enabled) return;
+    const listener = (event) => {
+      if (event.key.toLowerCase() !== key.toLowerCase()) return;
+      if (preventDefault) event.preventDefault();
+      if (stopPropagation) event.stopPropagation();
+      savedHandler.current(event);
+    };
+    window.addEventListener("keyup", listener);
+    return () => window.removeEventListener("keyup", listener);
+  }, [key, enabled, preventDefault, stopPropagation]);
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Debugger,
@@ -267,6 +293,7 @@ var useSound = (src, options = {}) => {
   noop,
   sleep,
   useImageValidation,
+  useKeyPress,
   useListen,
   useObserve,
   useSound
