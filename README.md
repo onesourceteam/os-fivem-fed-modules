@@ -1,6 +1,6 @@
 # os-fivem-fed-modules
 
-Biblioteca compartilhada para desenvolvimento Front-End em projetos FiveM . Ela fornece hooks e utilitários para:
+Biblioteca compartilhada para desenvolvimento com ReactJS em projetos FiveM . Ela fornece hooks e utilitários para:
 
 - Observar mensagens NUI (window.postMessage) com tipagem e segurança de handler
 - Enviar eventos para o backend (Lua/JS) com fallback para ambiente de navegador
