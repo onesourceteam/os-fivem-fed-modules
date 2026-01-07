@@ -1,331 +1,240 @@
----
 # os-fivem-fed-modules
 
-A **React/TypeScript utility library** for FiveM NUI development, including hooks for reactive UI, event listeners, image validation, sound handling, lazy component loading, and utilities for debugging, posting events, and more.
----
+Biblioteca compartilhada para desenvolvimento com ReactJS em projetos FiveM . Ela fornece hooks e utilitários para:
 
-## 📦 Installation
+- Observar mensagens NUI (window.postMessage) com tipagem e segurança de handler
+- Enviar eventos para o backend (Lua/JS) com fallback para ambiente de navegador
+- Simular eventos NUI no navegador durante o desenvolvimento (Debugger)
+- Utilidades úteis como lazy load de componentes, detecção de ambiente, sleep e manipulação de áudio
+
+## Instalação
 
 ```bash
+# npm
 npm install os-fivem-fed-modules
-# or
+
+# yarn
 yarn add os-fivem-fed-modules
+
+# bun
+bun add os-fivem-fed-modyles
 ```
 
----
-
-## 🪝 Hooks
-
-### Index
-
-- [useImageValidation](#useimagevalidation)
-- [useListen](#uselistenn)
-- [useObserve](#useobserve)
-- [useSound](#usesound)
-
----
-
-### `useImageValidation`
-
-Validates an image URL before using it, returning a boolean state indicating if the image is valid.
-
-#### **Import**
+## Importação
 
 ```ts
-import { useImageValidation } from "os-fivem-fed-modules";
+import { 
+    useObserve, 
+    Post, 
+    Debugger, 
+    useListen, 
+    useImageValidation, 
+    useSound, 
+    isEnvBrowser, 
+    lazyLoad, 
+    sleep 
+} from "os-fivem-fed-modules";
 ```
 
-#### **Usage**
+## Visão geral da API
+
+- Hooks
+	- `useObserve<T>(action, handler)` — Observa mensagens NUI (window "message") filtradas por `action`
+	- `useListen<T extends Event>(event, handler, target?)` — Observa eventos DOM (ex.: `keydown`, `resize`)
+	- `useImageValidation(imageUrl)` — Valida se uma imagem remota pode ser carregada
+	- `useSound(src, { volume, loop })` — Controle simples de áudio (play/pause)
+- Utilitários
+	- `Post.create<T>(eventName, data?, mockData?)` — Faz POST para o backend FiveM, com mock opcional no navegador
+	- `Debugger` — Simula eventos NUI no navegador (útil para desenvolvimento local)
+	- `isEnvBrowser()` — Detecta se está rodando no navegador (fora do runtime do FiveM)
+	- `lazyLoad(loader)` — Lazy load de componentes por nome, usando `React.lazy`
+	- `sleep(ms)` — Promise que resolve após um atraso
+- Tipos
+	- `ObservedMessageType<T> = { action: string; data: T }`
+	- `DebuggerEventType = { action: string; data: any }`
+
+
+## Exemplos rápidos
+
+### 1) Observando mensagens NUI com `useObserve`
 
 ```tsx
-const { isImageValid, imageUrl } = useImageValidation(
-  "https://example.com/image.png"
-);
-
-return (
-  <>
-    {isImageValid ? (
-      <img src={imageUrl} alt="Valid image" />
-    ) : (
-      <span>Invalid image</span>
-    )}
-  </>
-);
-```
-
-#### **Return**
-
-| Property       | Type      | Description                                  |
-| -------------- | --------- | -------------------------------------------- |
-| `isImageValid` | `boolean` | Indicates whether the image loaded correctly |
-| `imageUrl`     | `string`  | The validated image URL                      |
-
----
-
-### `useListen`
-
-Adds a **reactive event listener** to an element or the `window`, ensuring the latest handler is always used without recreating the listener.
-
-#### **Import**
-
-```ts
-import { useListen } from "os-fivem-fed-modules";
-```
-
-#### **Usage**
-
-```tsx
-useListen("keydown", (event) => {
-  if (event.key === "Escape") {
-    console.log("Escape key pressed!");
-  }
-});
-```
-
-#### **Custom element**
-
-```tsx
-const ref = useRef<HTMLDivElement>(null);
-
-useListen(
-  "click",
-  () => {
-    console.log("Element clicked!");
-  },
-  ref.current!
-);
-```
-
-#### **Parameters**
-
-| Parameter | Type                 | Default  | Description                                 |
-| --------- | -------------------- | -------- | ------------------------------------------- |
-| `event`   | `string`             | —        | Event name (e.g., `"click"`, `"keydown"`)   |
-| `handler` | `(event: T) => void` | —        | Function to execute when event occurs       |
-| `target`  | `EventTarget`        | `window` | Element where the listener will be attached |
-
----
-
-### `useObserve`
-
-Listens to messages sent via `window.postMessage` and executes a handler whenever the specified action matches. Ideal for NUI/iframe communication.
-
-#### **Import**
-
-```ts
+import { useState } from "react";
 import { useObserve } from "os-fivem-fed-modules";
-```
 
-#### **Usage**
+type Data = { open: boolean; userId?: number };
 
-```ts
-useObserve("updatePlayerData", (data) => {
-  console.log("Received data:", data);
-});
-```
+export function App() {
+	const [open, setOpen] = useState(false);
+	const [userId, setUserId] = useState<number>(0);
 
-#### **Parameters**
+	useObserve<Data>("setVisible", (response) => {
+		setOpen(response.open);
+		if (response.userId) setUserId(response.userId);
+	});
 
-| Parameter | Type                | Description                                                         |
-| --------- | ------------------- | ------------------------------------------------------------------- |
-| `action`  | `string`            | The action name to observe in messages                              |
-| `handler` | `(data: T) => void` | Function called when a message with the matching action is received |
-
----
-
-### `useSound`
-
-Handles audio playback in the browser, allowing play, pause, volume control, and looping.
-
-#### **Import**
-
-```ts
-import { useSound } from "os-fivem-fed-modules";
-```
-
-#### **Usage**
-
-```tsx
-const { play, pause, isPlaying } = useSound("/sounds/notification.mp3", {
-  volume: 0.8,
-  loop: false,
-});
-
-return (
-  <div>
-    <button onClick={play}>Play</button>
-    <button onClick={pause}>Pause</button>
-    <p>{isPlaying ? "Playing..." : "Paused"}</p>
-  </div>
-);
-```
-
-#### **Parameters**
-
-| Parameter | Type                       | Default                        | Description                 |
-| --------- | -------------------------- | ------------------------------ | --------------------------- |
-| `src`     | `string`                   | —                              | Audio file path or URL      |
-| `options` | `UseSoundOptionsInterface` | `{ volume: 1.0, loop: false }` | Audio configuration options |
-
-#### **Return**
-
-| Property    | Type         | Description                            |
-| ----------- | ------------ | -------------------------------------- |
-| `play`      | `() => void` | Plays the audio                        |
-| `pause`     | `() => void` | Pauses the audio                       |
-| `isPlaying` | `boolean`    | Indicates whether the audio is playing |
-
----
-
-## 🧩 Utilities
-
-### `Debugger`
-
-Processes and logs debug events sequentially, dispatching them via `window.postMessage`.
-
-#### **Import**
-
-```ts
-import { Debugger } from "os-fivem-fed-modules";
-```
-
-#### **Usage**
-
-```ts
-const events = [
-  { action: "playerJoin", data: { name: "Mestre" } },
-  { action: "playerLeave", data: { name: "Enrique" } },
-];
-
-const debuggerInstance = new Debugger(events, 2000); // optional timer in ms
-```
-
-#### **Constructor Parameters**
-
-| Parameter | Type                  | Default | Description                              |
-| --------- | --------------------- | ------- | ---------------------------------------- |
-| `events`  | `DebuggerEventType[]` | —       | List of events to process                |
-| `timer`   | `number`              | `1000`  | Interval between processing events in ms |
-
----
-
-### `isEnvBrowser`
-
-Checks if the code is running in a **browser** or in a NUI/Native environment (FiveM).
-
-#### **Import**
-
-```ts
-import { isEnvBrowser } from "os-fivem-fed-modules";
-```
-
-#### **Usage**
-
-```ts
-if (isEnvBrowser()) {
-  console.log("Running in browser");
-} else {
-  console.log("Running in NUI/Native");
+    return (
+        open && <div>{userId}</div>
+    )
 }
 ```
 
-#### **Return**
+No backend (Lua), um envio típico para a NUI seria algo como:
 
-| Type      | Description                                     |
-| --------- | ----------------------------------------------- |
-| `boolean` | `true` if running in browser, `false` otherwise |
-
----
-
-### `lazyLoad`
-
-Lazy loads multiple React components from a single module using `React.lazy` with a Proxy.
-
-#### **Import**
-
-```ts
-import { lazyLoad } from "os-fivem-fed-modules";
+```lua
+SendNUIMessage({ 
+    action = 'setVisible', 
+    data = { 
+        open = true, 
+        title = 123 
+    } 
+})
 ```
 
-#### **Usage**
 
-```ts
-const components = lazyLoad(() => import("./components"));
-const Button = components.Button;
-```
-
----
-
-### `Post`
-
-Utility class for sending POST requests to the FiveM backend, supporting mock data in browser environments.
-
-#### **Import**
+### 2) Enviando eventos para o backend com `Post`
 
 ```ts
 import { Post } from "os-fivem-fed-modules";
-```
 
-#### **Usage**
+await Post.create("useItem", { id: "water" });
 
-```ts
-// NUI/Native backend call
-Post.create("savePlayerData", { name: "Mestre", level: 5 }).then((response) =>
-  console.log("Backend response:", response)
+// Durante o desenvolvimento no navegador, você pode passar mockData
+
+type ItemsData = { id: string; amount: number }[]
+
+const result = await Post.create<{ ok: boolean }>(
+	"getItems",
+	{ filter: "drinks" },
+	[
+        { id: "water", amount: 10 },
+        { id: "juice", amount: 2 }
+    ]
 );
-
-// Browser mock
-Post.create(
-  "getPlayerData",
-  { some: "data" },
-  { name: "Enrique", level: 10 }
-).then((mockResponse) => console.log("Mock response:", mockResponse));
+// Em runtime FiveM: faz fetch para https://<resourceName>/inventory:getItems
+// Em navegador: retorna imediatamente mockData (se fornecido)
 ```
 
-#### **Parameters**
+Notas importantes:
 
-| Parameter   | Type      | Description                                                    |
-| ----------- | --------- | -------------------------------------------------------------- |
-| `eventName` | `string`  | NUI/Native event name                                          |
-| `data`      | `unknown` | Data to send in the POST body                                  |
-| `mockData`  | `T`       | Returned in browser environment instead of sending the request |
+- O nome do resource é obtido via `GetParentResourceName()` quando disponível; caso contrário, assume `nui-frame-app`.
+- Em caso de erro na requisição, a função lança o erro (catch/try se necessário).
 
-#### **Return**
 
-- Returns a `Promise<T>` with the backend response or the `mockData` in browser.
-
----
-
-### `sleep`
-
-Pauses code execution asynchronously for a given delay.
-
-#### **Import**
+### 3) Simulando mensagens no navegador com `Debugger`
 
 ```ts
-import { sleep } from "os-fivem-fed-modules";
+import { Debugger } from "os-fivem-fed-modules";
+
+new Debugger(
+	[
+		{ 
+            action: "setVisible", 
+            data: { 
+                open: true, 
+                userId: 123     
+            } 
+        },
+		{ 
+            action: "addNotify", 
+            data: { 
+                type: "success", 
+                message: "Bem-vindo!" 
+            } 
+        },
+	],
+	500
+);
 ```
 
-#### **Usage**
+Em ambiente browser (`isEnvBrowser() === true`) os eventos serão despachados como mensagens `window.postMessage`.
+
+
+### 4) Ouvindo eventos DOM com `useListen`
+
+```tsx
+import { useListen } from "os-fivem-fed-modules";
+
+export function EscToClose({ onClose }: { onClose: () => void }) {
+	useListen<KeyboardEvent>("keydown", (event) => {
+		if (event.key === "Escape") onClose();
+	});
+
+	return null;
+}
+```
+
+
+### 5) Validando imagens com `useImageValidation`
+
+```tsx
+import { useImageValidation } from "os-fivem-fed-modules";
+
+export function Avatar({ url }: { url: string }) {
+	const { isImageValid, imageUrl } = useImageValidation(url);
+	
+    return isImageValid ? (
+		<img 
+            src={imageUrl} 
+            alt="avatar" 
+        />
+	) : (
+		<div>Imagem inválida</div>
+	);
+}
+```
+
+
+### 6) Áudio simples com `useSound`
+
+```tsx
+import { useSound } from "os-fivem-fed-modules";
+
+export function ClickSound() {
+	const { play, pause, isPlaying } = useSound("/sounds/click.ogg", {
+		volume: 0.5,
+		loop: false,
+	});
+
+	return (
+		<div>
+			<button onClick={play}>Play</button>
+			<button onClick={pause} disabled={!isPlaying}>Pause</button>
+		</div>
+	);
+}
+```
+
+
+### 7) Outros utilitários
 
 ```ts
-console.log("Start");
-await sleep(2000);
-console.log("Executed after 2 seconds");
+import { isEnvBrowser, lazyLoad, sleep, noop } from "os-fivem-fed-modules";
+
+// 1) Ambiente
+if (isEnvBrowser()) {
+	console.log("Desenvolvendo no navegador");
+}
+
+// 2) Lazy load por nome de export
+const Components = lazyLoad(() => import("./components"));
+// Uso: <Components.MyModal /> irá carregar dinamicamente o export nomeado "MyModal" do módulo
+
+// 3) Sleep
+await sleep(300);
 ```
 
-#### **Parameters**
+## Contribuindo
 
-| Parameter | Type     | Description                  |
-| --------- | -------- | ---------------------------- |
-| `delay`   | `number` | Time in milliseconds to wait |
+- Faça um fork do repositório
+- Crie uma branch: `feat/minha-feature`
+- Rode o build localmente e valide os exemplos
+- Abra um Pull Request descrevendo a motivação e o escopo
 
-#### **Return**
+Issues e discussões em: https://github.com/onesourceteam/os-fivem-fed-modules/issues
 
-- Returns a `Promise<boolean>` that resolves `true` after the specified delay.
 
----
+## Licença
 
-Mestre, se quiser, posso também **adicionar uma seção “Contributing” e “License”** para deixar o README completo e pronto para publicar no GitHub/NPM.
+MIT © OneSource — Veja o arquivo `LICENSE` para mais detalhes.
 
-Quer que eu faça isso?
