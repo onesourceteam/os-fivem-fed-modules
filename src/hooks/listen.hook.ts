@@ -25,7 +25,7 @@ class Listener<T extends Event = Event> {
 }
 
 export const useListen = <T extends Event = Event>(
-  event: string,
+  event: keyof WindowEventMap,
   handler: EventHandlerSignature<T>,
   target: EventTarget = window
 ) => {
