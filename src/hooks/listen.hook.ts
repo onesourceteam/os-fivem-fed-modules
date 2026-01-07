@@ -3,10 +3,10 @@ import { type RefObject, useEffect, useRef } from "react";
 type EventHandlerSignature<T = Event> = (event: T) => void;
 
 class Listener<T extends Event = Event> {
-  private event: string;
+  private event: keyof WindowEventMap;
   private savedHandler: RefObject<EventHandlerSignature<T>>;
 
-  constructor(event: string, handler: EventHandlerSignature<T>) {
+  constructor(event: keyof WindowEventMap, handler: EventHandlerSignature<T>) {
     this.event = event;
     this.savedHandler = useRef<EventHandlerSignature<T>>(handler);
   }
@@ -25,7 +25,7 @@ class Listener<T extends Event = Event> {
 }
 
 export const useListen = <T extends Event = Event>(
-  event: string,
+  event: keyof WindowEventMap,
   handler: EventHandlerSignature<T>,
   target: EventTarget = window
 ) => {
