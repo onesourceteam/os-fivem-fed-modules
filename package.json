@@ -28,7 +28,8 @@
     "fivem",
     "lib",
     "frontend",
-    "onesource"
+    "onesource",
+    "react"
   ],
   "author": "Enrique Marquez",
   "license": "MIT",
