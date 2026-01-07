@@ -23,16 +23,19 @@ __export(index_exports, {
   Debugger: () => Debugger,
   Post: () => Post,
   isEnvBrowser: () => isEnvBrowser,
+  lazyLoad: () => lazyLoad,
   noop: () => noop,
+  sleep: () => sleep,
+  useImageValidation: () => useImageValidation,
+  useKeyPress: () => useKeyPress,
   useListen: () => useListen,
-  useObserve: () => useObserve
+  useObserve: () => useObserve,
+  useSound: () => useSound
 });
 module.exports = __toCommonJS(index_exports);
 
-// src/utils/misc.ts
+// src/utils/isEnvBrowser.ts
 var isEnvBrowser = () => !window.invokeNative;
-var noop = () => {
-};
 
 // src/utils/debugger.ts
 var Debugger = class {
@@ -66,44 +69,7 @@ var Debugger = class {
   }
 };
 
-// src/hooks/observe.hook.ts
-var import_react = require("react");
-var NuiListener = class {
-  action;
-  savedHandler;
-  constructor(action, handler) {
-    this.action = action;
-    this.savedHandler = (0, import_react.useRef)(noop);
-    this.setHandler(handler);
-  }
-  setHandler(handler) {
-    this.savedHandler.current = handler;
-  }
-  observe() {
-    const eventListener = (event) => {
-      const { action: eventAction, data } = event.data;
-      if (eventAction === this.action && this.savedHandler.current) {
-        if (isEnvBrowser()) {
-          console.log("Observed event:", event);
-        }
-        this.savedHandler.current(data);
-      }
-    };
-    window.addEventListener("message", eventListener);
-    return () => window.removeEventListener("message", eventListener);
-  }
-};
-var useObserve = (action, handler) => {
-  const listener = (0, import_react.useRef)(new NuiListener(action, handler));
-  (0, import_react.useEffect)(() => {
-    listener.current.setHandler(handler);
-  }, [handler]);
-  (0, import_react.useEffect)(() => {
-    return listener.current.observe();
-  }, [action]);
-};
-
-// src/hooks/post.hook.ts
+// src/utils/post.ts
 var Post = class _Post {
   eventName;
   data;
@@ -143,14 +109,77 @@ var Post = class _Post {
   }
 };
 
-// src/hooks/listen.hook.ts
+// src/utils/lazyLoad.ts
+var import_react = require("react");
+var lazyLoad = (loader) => new Proxy({}, {
+  get: (_, componentName) => {
+    if (typeof componentName === "string") {
+      return (0, import_react.lazy)(
+        () => loader().then((module2) => ({
+          default: module2[componentName]
+        }))
+      );
+    }
+    return;
+  }
+});
+
+// src/utils/sleep.ts
+var sleep = (delay) => new Promise((resolve) => {
+  setTimeout(() => {
+    resolve(true);
+  }, delay);
+});
+
+// src/utils/index.ts
+var noop = () => {
+};
+
+// src/hooks/observe.hook.ts
 var import_react2 = require("react");
+var NuiListener = class {
+  action;
+  savedHandler;
+  constructor(action, handler) {
+    this.action = action;
+    this.savedHandler = (0, import_react2.useRef)(noop);
+    this.setHandler(handler);
+  }
+  setHandler(handler) {
+    this.savedHandler.current = handler;
+  }
+  observe() {
+    const eventListener = (event) => {
+      const { action: eventAction, data } = event.data;
+      if (eventAction === this.action && this.savedHandler.current) {
+        if (isEnvBrowser()) {
+          console.log("Observed event:", event);
+        }
+        this.savedHandler.current(data);
+      }
+    };
+    window.addEventListener("message", eventListener);
+    return () => window.removeEventListener("message", eventListener);
+  }
+};
+var useObserve = (action, handler) => {
+  const listener = (0, import_react2.useRef)(new NuiListener(action, handler));
+  (0, import_react2.useEffect)(() => {
+    listener.current.setHandler(handler);
+  }, [handler]);
+  (0, import_react2.useEffect)(() => {
+    return listener.current.observe();
+  }, [action]);
+};
+
+// src/hooks/listen.hook.ts
+var import_react3 = require("react");
 var Listener = class {
   event;
   savedHandler;
   constructor(event, handler) {
     this.event = event;
-    this.savedHandler = (0, import_react2.useRef)(handler);
+    this.savedHandler = (0, import_react3.useRef)(handler);
   }
   setHandler(handler) {
     this.savedHandler.current = handler;
@@ -164,21 +193,109 @@ var Listener = class {
   }
 };
 var useListen = (event, handler, target = window) => {
-  const listener = (0, import_react2.useRef)(new Listener(event, handler));
-  (0, import_react2.useEffect)(() => {
+  const listener = (0, import_react3.useRef)(new Listener(event, handler));
+  (0, import_react3.useEffect)(() => {
     listener.current.setHandler(handler);
   }, [handler]);
-  (0, import_react2.useEffect)(() => {
+  (0, import_react3.useEffect)(() => {
     return listener.current.listen(target);
   }, [event, target]);
+};
+
+// src/hooks/image-validation.hook.ts
+var import_react4 = require("react");
+function isImgValid(url) {
+  const img = new Image();
+  img.src = url;
+  return new Promise((resolve) => {
+    img.onerror = () => resolve(false);
+    img.onload = () => resolve(true);
+  });
+}
+var useImageValidation = (imageUrl) => {
+  const [isImageValid, setIsImageValid] = (0, import_react4.useState)(true);
+  (0, import_react4.useEffect)(() => {
+    const validateImage = async () => {
+      try {
+        const isValid = await isImgValid(imageUrl);
+        setIsImageValid(isValid);
+      } catch (error) {
+        console.error("Error validating image:", error);
+        setIsImageValid(false);
+      }
+    };
+    validateImage();
+  }, [imageUrl]);
+  return { isImageValid, imageUrl };
+};
+
+// src/hooks/sound.hook.ts
+var import_react5 = require("react");
+var useSound = (src, options = {}) => {
+  const { volume = 1, loop = false } = options;
+  const [isPlaying, setIsPlaying] = (0, import_react5.useState)(false);
+  const audioRef = (0, import_react5.useRef)(null);
+  (0, import_react5.useEffect)(() => {
+    audioRef.current = new Audio(src);
+    audioRef.current.volume = volume;
+    audioRef.current.loop = loop;
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, [src, volume, loop]);
+  const play = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+  const pause = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+  return { play, pause, isPlaying };
+};
+
+// src/hooks/key-press.hook.ts
+var import_react6 = require("react");
+var useKeyPress = (key, handler, options = {}) => {
+  const {
+    enabled = true,
+    preventDefault = false,
+    stopPropagation = false
+  } = options;
+  const savedHandler = (0, import_react6.useRef)(noop);
+  (0, import_react6.useEffect)(() => {
+    savedHandler.current = handler;
+  }, [handler]);
+  (0, import_react6.useEffect)(() => {
+    if (!enabled) return;
+    const listener = (event) => {
+      if (event.key.toLowerCase() !== key.toLowerCase()) return;
+      if (preventDefault) event.preventDefault();
+      if (stopPropagation) event.stopPropagation();
+      savedHandler.current(event);
+    };
+    window.addEventListener("keyup", listener);
+    return () => window.removeEventListener("keyup", listener);
+  }, [key, enabled, preventDefault, stopPropagation]);
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Debugger,
   Post,
   isEnvBrowser,
+  lazyLoad,
   noop,
+  sleep,
+  useImageValidation,
+  useKeyPress,
   useListen,
-  useObserve
+  useObserve,
+  useSound
 });
 //# sourceMappingURL=index.cjs.map
